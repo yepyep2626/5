@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울 지역문제 해결 방안 찾기</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background-color: #FFFBE6;
+            color: #333;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+        }
+        h1, h2 { color: #E67300; }
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #F28C28;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 18px 28px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            margin: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.12);
+        }
+        button:hover { background-color: #D97706; }
+        button.gray { background-color: #8A8A8A; }
+        button.gray:hover { background-color: #6E6E6E; }
+        input[type="text"], textarea {
+            font-family: inherit;
+            padding: 14px;
+            font-size: 1.1rem;
+            border: 2px solid #FFD9A8;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        input[type="text"] { width: 80%; max-width: 400px; margin-bottom: 20px; }
+        textarea { width: 100%; height: 84px; resize: none; margin-bottom: 8px; }
+        select { font-family: inherit; font-size: 1rem; padding: 6px; border-radius: 8px; border: 2px solid #FFD9A8; }
+
+        .hidden { display: none; }
+        .emoji-big { font-size: 6rem; margin: 8px 0; }
+        .hint { font-size: 0.95rem; color: #666; margin: 0 0 10px; }
+        .highlight { color: #E0400A; font-weight: bold; }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 6px;
+            margin-top: 16px;
+        }
+        .article-box {
+            background: #FFF3F7;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px dashed #F4A6B8;
+            font-size: 1.15rem;
+            line-height: 1.75;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .article-box .source { font-size: 0.85rem; color: #777; margin-top: 10px; }
+        .box { padding: 18px; border-radius: 15px; margin-bottom: 18px; text-align: left; }
+        .box h3 { margin-top: 0; }
+        .q-label { font-weight: bold; margin: 12px 0 6px; line-height: 1.5; }
+
+        .example { background: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 1rem; line-height: 1.6; }
+        .example .bad { color: #B3261E; }
+        .example .good { color: #1B7F3B; }
+
+        .idea-block { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #E5D9FF; }
+        .checks label { display: block; font-size: 1rem; margin: 6px 0; cursor: pointer; line-height: 1.5; }
+        .checks input { transform: scale(1.4); margin-right: 10px; }
+
+        .eval-card { background: #F2FFF7; border: 2px solid #8FE3A8; border-radius: 15px; padding: 18px; margin-bottom: 18px; text-align: left; }
+        .eval-question { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 1.05rem; }
+
+        .result-box { background: #FFFBD0; border: 3px solid #FFD700; border-radius: 15px; padding: 18px; margin: 18px 0; font-size: 1.2rem; font-weight: bold; }
+        .result-box.cause { background: #FFF8E1; border-color: #F0D98A; font-size: 1.05rem; text-align: left; }
+        .score-note { font-size: 0.9rem; font-weight: normal; color: #666; margin-top: 8px; }
+        .together { background: #FFF1DC; padding: 14px; border-radius: 10px; font-weight: bold; color: #8A4B00; margin-top: 16px; }
+        .follow-up { background: #E3F8F8; padding: 14px; border-radius: 10px; font-weight: bold; color: #006666; margin-top: 16px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- 1단계: 이름 입력 -->
+    <div id="step1">
+        <h1>👋 안녕! 네 이름을 알려줄래?</h1>
+        <div class="emoji-big" aria-hidden="true">🧒</div>
+        <input type="text" id="studentName" placeholder="이름을 입력하세요" maxlength="10">
+        <br>
+        <button id="startBtn">🚀 시작하기</button>
+    </div>
+
+    <!-- 2단계: 문제 고르기 -->
+    <div id="step2" class="hidden">
+        <h1 id="welcome"></h1>
+        <h2>우리가 사는 서울에는 어떤 문제들이 있을까?<br>문제를 골라 해결방안을 작성해봐!</h2>
+        <div class="problem-grid" id="problemButtons"></div>
+    </div>
+
+    <!-- 3단계: 기사 읽고 원인 찾기 -->
+    <div id="step3" class="hidden">
+        <h1 id="problemTitle"></h1>
+        <div class="article-box" id="article"></div>
+
+        <div class="box" style="background:#FFF8DC;">
+            <h3>🔍 이 문제는 왜 생겼을까? (원인 찾기)</h3>
+            <div class="q-label" style="color:#7A4B00;">👦 개인적 원인 (우리의 행동)</div>
+            <div class="q-label" id="q1Label" style="font-weight:normal;"></div>
+            <textarea id="q1Answer" placeholder="한 문장만 써도 괜찮아요."></textarea>
+            <div class="q-label" style="color:#7A4B00;">🏢 구조적 원인 (구청·시청이 할 일)</div>
+            <div class="q-label" id="q2Label" style="font-weight:normal;"></div>
+            <textarea id="q2Answer" placeholder="한 문장만 써도 괜찮아요."></textarea>
+        </div>
+
+        <button class="gray" id="back3">⬅️ 뒤로 가기</button>
+        <button id="next3">다음으로 ➡️</button>
+    </div>
+
+    <!-- 4단계: 해결 방안 쓰기 -->
+    <div id="step4" class="hidden">
+        <h1>💡 해결 방안을 적어 보자!</h1>
+        <div class="box" style="background:#FFF8DC;">
+            <b>👦 개인적 원인</b>: <span id="causeReminder1"></span><br><b>🏢 구조적 원인</b>: <span id="causeReminder2"></span>
+        </div>
+        <p>우리 반이 할 수 있는 일과 기관에 제안할 일을 <b>각각 2개 이상</b> 적어 보자!<br>한 문장씩만 써도 괜찮아요 😊</p>
+
+        <div class="box" style="background:#EEE8FF;">
+            <h3>👦 우리 반 학생들이 실천할 수 있는 일 (2개 이상)</h3>
+            <div class="example">
+                <div class="bad" id="exBad"></div>
+                <div class="good" id="exGood"></div>
+            </div>
+            <div id="myIdeaBlocks"></div>
+        </div>
+
+        <div class="box" style="background:#FFE9E6;">
+            <h3>🏢 기관(구청, 시청 등)에 제안할 일 (2개 이상)</h3>
+            <p class="hint">누구에게, 무엇을 해 달라고 부탁할지, 그리고 우리가 함께 할 일도 써 보세요.</p>
+            <div class="example">
+                <div class="bad" id="orgExBad"></div>
+                <div class="good" id="orgExGood"></div>
+            </div>
+            <div id="orgIdeaBlocks"></div>
+        </div>
+
+        <button class="gray" id="back4">⬅️ 뒤로 가기</button>
+        <button id="next4">다음으로 ➡️</button>
+    </div>
+
+    <!-- 5단계: 평가 -->
+    <div id="step5" class="hidden">
+        <h1>📊 내가 찾은 해결 방안 평가하기</h1>
+        <p>방안마다 점수를 매겨 보자!<br>(매우 그렇다: 3점, 그렇다: 2점, 보통이다: 1점)</p>
+        <div id="evalForm"></div>
+        <button class="gray" id="back5">⬅️ 뒤로 가기</button>
+        <button id="resultBtn">결과 확인하기 🎉</button>
+    </div>
+
+    <!-- 6단계: 결과 -->
+    <div id="step6" class="hidden">
+        <h1>🏆 <span id="resName"></span> 학생이 찾은 해결 방안!</h1>
+        <div class="result-box cause">
+            🔍 내가 찾은 원인<br>
+            <span style="font-weight:normal;">👦 개인적 원인: <span id="resCause1"></span><br>🏢 구조적 원인: <span id="resCause2"></span></span>
+        </div>
+        <div class="result-box">
+            ⭐ 우리 반이 실천할 최고의 방안
+            <p id="bestMy" style="color:#2F4FBF;"></p>
+            <div class="score-note" id="myNote"></div>
+        </div>
+        <div class="result-box">
+            ⭐ 기관에 제안할 최고의 방안
+            <p id="bestOrg" style="color:#B8403F;"></p>
+            <div class="score-note" id="orgNote"></div>
+        </div>
+        <div class="together">🤝 지역문제는 지역 주민과 기관이 함께 노력할 때 해결할 수 있어요!</div>
+        <div class="follow-up">🗣️ 짝에게 내 방안을 설명해 보고, 다른 친구들의 방안도 구경해 보세요.</div>
+        <button id="restartBtn" style="margin-top:18px;">처음부터 다시 하기 🔄</button>
+    </div>
+
+</div>
+
+<script>
+/*
+ * 문제 데이터
+ * - article: 기사 본문 (※ 교사용 확인 필요: 실제 기사 원문으로 바꾸려면 이 부분만 수정하면 됩니다)
+ * - q1: 학생이 직접 겪은 일을 떠올리는 질문 / q2: 원인을 생각하는 질문
+ * - bad/good: 피상적인 방안 vs 구체적인 방안 예시
+ */
+const SOURCE_TEXT = "※ 교과서와 서울 생활 자료를 바탕으로 4학년 눈높이에 맞게 다시 쓴 글이에요.";
+const problemData = {
+    trash: {
+        title: "🗑️ 쓰레기 문제",
+        headline: "쓰레기가 자꾸 늘어나요",
+        article: "서울에서는 하루에도 많은 생활 쓰레기가 나옵니다. 그런데 쓰레기를 처리하는 시설에는 한계가 있어서, 처리하는 과정에서 오염이 생기기도 합니다. 학교 앞 골목이나 놀이터에 버려진 과자 봉지와 음료 컵도 우리 주변에서 볼 수 있는 쓰레기 문제입니다.",
+        q1: "우리가 먹고 난 과자 봉지나 음료 컵을 어떻게 했는지 떠올려 봐요. 쓰레기가 생기게 하는 우리의 행동이 있었나요?",
+        q2: "학교 앞이나 놀이터에 쓰레기통이 충분한지 생각해 봐요. 구청·시청은 무엇을 해야 할까요?",
+        bad: "❌ 아쉬운 예: \"분리배출을 철저히 한다.\" (무엇을, 언제, 어떻게 하는지 알 수 없어요)",
+        good: "✅ 좋은 예: \"이번 주 월요일부터 우리 반 쓰레기통 옆에 '종이·플라스틱·우유팩' 그림 표지를 폐지로 만들어 붙이고, 점심시간마다 모둠이 돌아가며 확인한다.\"",
+        orgBad: "❌ 아쉬운 예: \"구청이 쓰레기를 치워 주세요.\" (우리가 함께 할 일이 없어요)",
+        orgGood: "✅ 좋은 예: \"이번 주 우리 반이 학교 앞 쓰레기가 많은 곳을 조사해 지도로 만들고, 구청에 '쓰레기통을 놓아 주세요' 제안서를 쓴다. 쓰레기통이 생기면 우리 반이 청소 당번을 정해 함께 관리한다.\""
+    },
+    water: {
+        title: "💧 수질오염 문제",
+        headline: "하천이 더러워지고 있어요",
+        article: "집에서 버리는 음식물 쓰레기, 화학 약품, 세제가 하수구로 흘러가면 하천이 오염됩니다. 하천이 더러워지면 냄새가 나고, 물고기 같은 생물이 살기 어려워집니다. 하천 가를 산책하는 주민들도 불편해집니다.",
+        q1: "집이나 급식실에서 음식물 찌꺼기나 세제를 물에 흘려보낸 적이 있나요? 왜 그랬을까요?",
+        q2: "하수구와 하천을 깨끗하게 관리하려면 구청·시청은 무엇을 해야 할까요? (예: 하수 처리, 안내판, 점검)",
+        bad: "❌ 아쉬운 예: \"물을 오염시키지 않는다.\" (어떻게 하는지 알 수 없어요)",
+        good: "✅ 좋은 예: \"이번 주 급식 때 먹을 만큼만 받고, 남긴 음식 양을 교실 벽 종이에 매일 스티커로 붙여 우리 반 잔반 줄이기 기록판을 만든다.\"",
+        orgBad: "❌ 아쉬운 예: \"시청이 하천을 깨끗하게 해 주세요.\" (우리가 함께 할 일이 없어요)",
+        orgGood: "✅ 좋은 예: \"이번 주 우리 반이 학교 주변 하수구와 하천의 오염된 모습을 관찰해 그림으로 기록하고, 구청에 '안내판을 세워 주세요' 제안서를 쓴다. 안내판 그림은 우리가 직접 그린다.\""
+    },
+    noise: {
+        title: "🔊 소음·진동 문제",
+        headline: "시끄러워서 힘들어요",
+        article: "서울에는 도로의 자동차 소리, 공사장의 진동 때문에 힘들어하는 주민이 많습니다. 아파트에서는 위층의 쿵쿵 소리 같은 층간 소음 때문에 이웃끼리 갈등이 생기기도 합니다. 소음은 잠을 방해하고 공부와 휴식도 어렵게 만듭니다.",
+        q1: "우리가 복도나 교실, 집에서 쿵쿵 뛰거나 큰 소리를 낸 적이 있나요? 왜 그랬을까요?",
+        q2: "소음이 줄어들도록 구청·시청이 할 수 있는 일은 무엇일까요? (예: 공사 시간 지키기, 안내 표지판, 소음 점검)",
+        bad: "❌ 아쉬운 예: \"조용히 한다.\" (언제, 어떻게 하는지 알 수 없어요)",
+        good: "✅ 좋은 예: \"오늘부터 복도에서 '살금살금 걷기' 손 신호를 정하고, 우리 반이 직접 그린 '조용히 걷기' 포스터를 복도 문에 붙여 일주일 동안 실천 체크표를 쓴다.\"",
+        orgBad: "❌ 아쉬운 예: \"구청이 소음을 막아 주세요.\" (우리가 함께 할 일이 없어요)",
+        orgGood: "✅ 좋은 예: \"이번 주 우리 반이 학교 주변에서 시끄러운 곳과 시간을 조사해 표로 정리하고, 구청에 '소음 안내 표지판을 세워 주세요' 제안서를 쓴다. 표지판 그림은 우리가 직접 그린다.\""
+    },
+    parking: {
+        title: "🚗 주차 문제",
+        headline: "불법 주차, 대책이 필요해요",
+        article: "자동차는 많은데 주차할 공간이 부족해서, 좁은 골목길에 불법으로 주차하는 차가 많습니다. 불법 주차한 차량 때문에 소방차 같은 긴급 차량이 현장에 늦게 도착해 피해가 더 커진 일도 있었습니다. 주차 문제로 주민들이 다투는 일도 생깁니다.",
+        q1: "자동차를 타고 내릴 때 골목에 잠깐 차를 세우는 모습을 본 적이 있나요? 왜 그랬을까요?",
+        q2: "주차할 곳이 부족하거나 단속이 잘 안 되면 이런 일이 생겨요. 구청·시청은 무엇을 해야 할까요? (예: 주차장 알리기, 단속, 안내판)",
+        bad: "❌ 아쉬운 예: \"불법 주차를 하지 않는다.\" (우리가 직접 할 수 없는 일이에요)",
+        good: "✅ 좋은 예: \"이번 주 우리 반이 등하굣길 골목 그림 지도를 그려 '차가 서 있으면 위험한 곳'을 빨간 스티커로 표시하고, 지도를 교실 게시판에 붙인다.\"",
+        orgBad: "❌ 아쉬운 예: \"시청이 주차장을 아주 많이 지어 주세요.\" (큰 공사와 많은 돈이 필요해요)",
+        orgGood: "✅ 좋은 예: \"우리 반이 만든 '위험한 골목 지도'를 가지고 구청에 '이곳에 불법 주차 안내판을 세워 주세요' 제안서를 쓴다. 안내판 그림은 우리가 직접 그린다.\""
+    },
+    housing: {
+        title: "🏠 주택 문제",
+        headline: "낡은 집과 건물 때문에 불편해요",
+        article: "서울은 집값이 매우 비싸고, 낡고 오래된 주택이 많아 생활이 불편한 주민이 많습니다. 계단이 많고 어두운 건물, 오래되어 고장 난 시설을 고치기도 쉽지 않습니다. 이런 문제는 주민의 생활과 안전에도 영향을 줍니다.",
+        q1: "학교 건물의 복도, 계단, 화장실을 쓸 때 고장 난 곳을 보고도 말하지 않거나 함부로 쓴 적이 있나요?",
+        q2: "낡은 건물을 고치려면 무엇이 필요할까요? 구청·시청은 무엇을 해야 할까요? (예: 건물 점검, 작은 수리 도와주기)",
+        bad: "❌ 아쉬운 예: \"집값을 내린다.\" (우리가 직접 할 수 없는 일이에요)",
+        good: "✅ 좋은 예: \"이번 주 우리 학교에서 낡거나 불편한 곳(깨진 타일, 어두운 계단 등)을 찾아 '불편한 곳 지도'를 만들고, 선생님께 보여 드린다.\"",
+        orgBad: "❌ 아쉬운 예: \"시청이 낡은 건물을 모두 새로 지어 주세요.\" (큰 공사와 많은 돈이 필요해요)",
+        orgGood: "✅ 좋은 예: \"우리 반이 학교 주변의 어두운 계단, 깨진 보도블록 같은 불편한 곳을 찾아 그림으로 기록하고, 구청에 '작은 수리를 해 주세요' 제안서를 쓴다.\""
+    },
+    safety: {
+        title: "🚨 안전 문제",
+        headline: "어두운 골목, 물에 잠기는 길",
+        article: "서울에는 좁고 어두운 골목길이 있어서 범죄 위험을 걱정하는 주민이 많습니다. 또 짧은 시간에 폭우가 쏟아지면 도로나 골목이 물에 잠기는 침수 피해도 일어납니다. 해마다 여름이면 도로가 물에 잠겨 주민들이 불편을 겪는 곳도 있습니다.",
+        q1: "길가 배수구 근처에 쓰레기가 버려져 있거나 낙엽이 쌓인 모습을 본 적이 있나요? 비가 많이 오면 어떻게 될까요?",
+        q2: "가로등이 부족한 곳이나 물이 잘 안 빠지는 곳에서 구청·시청은 무엇을 해야 할까요? (예: 가로등 설치, 배수 시설 점검)",
+        bad: "❌ 아쉬운 예: \"밤에 돌아다니지 않는다.\" (문제를 해결하는 방법이 아니에요)",
+        good: "✅ 좋은 예: \"이번 주 우리 반 친구들이 다니는 길에서 어둡거나 물이 고이는 곳을 포스트잇에 적어 교실 '안전 지도'에 붙이고, 같은 길로 다니는 친구끼리 '함께 가요' 짝을 정한다.\"",
+        orgBad: "❌ 아쉬운 예: \"구청이 골목을 안전하게 만들어 주세요.\" (우리가 함께 할 일이 없어요)",
+        orgGood: "✅ 좋은 예: \"우리 반 '안전 지도'에 표시한 어두운 곳과 물이 고이는 곳을 정리해, 구청에 '가로등과 배수구를 점검해 주세요' 제안서를 쓰고 지도를 함께 보낸다.\""
+    },
+    wildlife: {
+        title: "🦌 동물과 함께 살기 문제",
+        headline: "도로 때문에 동물이 위험해요",
+        article: "새로운 도로가 생기면서 동물들이 살던 곳이 끊어지는 일이 있습니다. 먹이와 쉴 곳을 찾아 길을 건너려던 야생동물이 자동차에 치이는 '찻길 사고(로드킬)'가 일어나고, 동물들은 위험에 처합니다.",
+        q1: "길이나 공원에서 동물을 따라가거나 먹이를 준 적이 있나요? 그러면 동물이 사람이나 도로 가까이 오게 될 수 있어요. 그런 모습을 본 적이 있나요?",
+        q2: "도로를 만들 때 동물이 다니는 길이 끊기지 않으려면 구청·시청은 무엇을 해야 할까요? (예: 표지판, 동물이 건너는 길)",
+        bad: "❌ 아쉬운 예: \"동물을 사랑한다.\" (무엇을 하는지 알 수 없어요)",
+        good: "✅ 좋은 예: \"이번 주 우리 반이 '동물 조심! 천천히 달려요' 표지판 그림을 직접 그려 학교 게시판에 붙이고, 가족에게 보여 준다.\"",
+        orgBad: "❌ 아쉬운 예: \"시청이 도로를 없애 주세요.\" (큰 공사가 필요하고 현실적이지 않아요)",
+        orgGood: "✅ 좋은 예: \"우리 반이 '동물 조심' 표지판 그림을 만들어, 구청에 '도로 옆에 표지판을 세워 주세요' 제안서를 쓰고 우리가 만든 그림을 함께 보낸다.\""
+    }
+};
+
+// 4단계 학생 방안 점검 기준 (시간·자원·주체)
+const checkItems = [
+    "⏰ 오늘이나 이번 주 안에 시작할 수 있어요",
+    "✏️ 돈이 들지 않고, 교실에 있는 재료로 할 수 있어요",
+    "🙋 어른에게 부탁만 하지 않고 우리가 직접 할 수 있어요"
+];
+
+// 기관 제안 점검 기준 (선택)
+const orgCheckItems = [
+    "⏰ [실행 가능성] 지금 바로 현장 조사나 제안서 작성을 시작할 수 있는 주제인가요?",
+    "✏️ [현실성] 대규모 공사나 많은 예산 없이, 작은 변화로 시작할 수 있는 제안인가요?",
+    "🙋 [주체성] 기관에 요청만 하는 것이 아니라, 우리가 직접 함께 실천할 내용이 들어 있나요?"
+];
+
+// 5단계 평가 기준
+const criteria = [
+    { key: 'effect', label: '효과가 큰가요?' },
+    { key: 'cost',   label: '비용이 적게 드나요?' },
+    { key: 'action', label: '실천할 수 있나요?' },
+    { key: 'harm',   label: '누군가에게 피해를 주지 않나요?' }
+];
+
+
+let userName = "", current = "", state = { cause1: "", cause2: "", mine: [], org: [] };
+const $ = id => document.getElementById(id);
+const STEPS = ['step1','step2','step3','step4','step5','step6'];
+
+function show(id) {
+    STEPS.forEach(s => $(s).classList.add('hidden'));
+    $(id).classList.remove('hidden');
+    window.scrollTo(0, 0);
+}
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// 받침 있으면 '아', 없으면 '야'
+function callName(n) {
+    const c = n.charCodeAt(n.length - 1);
+    if (c >= 0xAC00 && c <= 0xD7A3) return n + ((c - 0xAC00) % 28 !== 0 ? '아' : '야');
+    return n + ' 님';
+}
+
+/* 1단계 */
+function start() {
+    const n = $('studentName').value.trim();
+    if (!n) { alert("앗! 이름을 먼저 입력해 줘~ 😊"); return; }
+    userName = n;
+    $('welcome').textContent = `환영해, ${callName(userName)}!`;
+    const grid = $('problemButtons');
+    grid.innerHTML = '';
+    Object.keys(problemData).forEach(k => {
+        const b = document.createElement('button');
+        b.textContent = problemData[k].title;
+        b.addEventListener('click', () => pick(k));
+        grid.appendChild(b);
+    });
+    show('step2');
+}
+$('startBtn').addEventListener('click', start);
+$('studentName').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) start(); });
+
+/* 2→3단계 */
+function pick(k) {
+    current = k;
+    const d = problemData[k];
+    $('problemTitle').textContent = d.title;
+    $('article').innerHTML = `<b>[어린이 뉴스] ${esc(d.headline)}</b><br>${esc(d.article)}<div class="source">${esc(SOURCE_TEXT)}</div>`;
+    $('q1Label').textContent = d.q1;
+    $('q2Label').textContent = d.q2;
+    $('q1Answer').value = ''; $('q2Answer').value = '';
+    show('step3');
+}
+$('back3').addEventListener('click', () => show('step2'));
+
+/* 3→4단계 */
+$('next3').addEventListener('click', () => {
+    const a1 = $('q1Answer').value.trim(), a2 = $('q2Answer').value.trim();
+    if (!a1 && !a2) {
+        alert(`${callName(userName)}, 한 문장만 써도 괜찮아! 네가 직접 겪은 일을 떠올려 볼까? 🌟`);
+        return;
+    }
+    state.cause1 = a1; state.cause2 = a2;
+    const d = problemData[current];
+    $('causeReminder1').textContent = a1 || '(쓰지 않았어요)';
+    $('causeReminder2').textContent = a2 || '(쓰지 않았어요)';
+    $('exBad').textContent = d.bad;
+    $('exGood').textContent = d.good;
+    $('orgExBad').textContent = d.orgBad;
+    $('orgExGood').textContent = d.orgGood;
+    buildMyIdeaBlocks();
+    buildOrgBlocks();
+    show('step4');
+});
+
+function buildMyIdeaBlocks() {
+    let html = '';
+    for (let i = 1; i <= 3; i++) {
+        html += `<div class="idea-block">
+            <textarea id="my${i}" placeholder="${i}. ${i === 3 ? '(더 있다면) ' : ''}우리 반이 실천할 수 있는 일"></textarea>
+            <div class="hint" style="margin-top:6px;">💬 이 방안은 어때요? (맞는 것만 체크해 봐요. 체크하지 않아도 다음으로 갈 수 있어요)</div><div class="checks">` +
+            checkItems.map((t, j) => `<label><input type="checkbox" id="chk${i}_${j}">${t}</label>`).join('') +
+            `</div></div>`;
+    }
+    $('myIdeaBlocks').innerHTML = html;
+}
+function buildOrgBlocks() {
+    let html = '';
+    for (let i = 1; i <= 3; i++) {
+        html += `<div class="idea-block">
+            <textarea id="org${i}" placeholder="${i}. ${i === 3 ? '(더 있다면) ' : ''}기관에 제안할 일"></textarea>
+            <div class="hint" style="margin-top:6px;">💬 이 제안은 어때요? (맞는 것만 체크해 봐요. 체크하지 않아도 다음으로 갈 수 있어요)</div>
+            <div class="checks">` +
+            orgCheckItems.map((t, j) => `<label><input type="checkbox" id="ochk${i}_${j}">${t}</label>`).join('') +
+            `</div></div>`;
+    }
+    $('orgIdeaBlocks').innerHTML = html;
+}
+$('back4').addEventListener('click', () => show('step3'));
+
+/* 4→5단계 */
+$('next4').addEventListener('click', () => {
+    const name = callName(userName);
+    const myAll = [1,2,3].map(i => ({ i, text: $('my'+i).value.trim() }));
+    const orgAll = ['org1','org2','org3'].map(id => $(id).value.trim());
+
+    const myFilled = myAll.filter(x => x.text);
+    const orgFilled = orgAll.filter(t => t);
+
+    if (myFilled.length < 2 || orgFilled.length < 2) {
+        alert(`${name}, 해결 방안을 각각 2개 이상 써 줄래? 한 문장씩만 써도 괜찮아! 우리가 직접 할 수 있는 일을 떠올려 보자 💪`);
+        return;
+    }
+    state.mine = myFilled.map(x => x.text);
+    state.org = orgFilled;
+    buildEval();
+    show('step5');
+});
+
+/* 5단계: 평가 */
+function buildEval() {
+    const items = [
+        ...state.mine.map((t, i) => ({ id: 'm' + i, tag: `👦 우리 반 방안 ${i + 1}`, text: t })),
+        ...state.org.map((t, i) => ({ id: 'o' + i, tag: `🏢 기관 제안 방안 ${i + 1}`, text: t }))
+    ];
+    $('evalForm').innerHTML = items.map(it => `
+        <div class="eval-card">
+            <h3 style="margin-top:0;">${it.tag}: <span style="color:#555;">${esc(it.text)}</span></h3>
+            ${criteria.map(c => `
+                <div class="eval-question">
+                    <span>${c.label}</span>
+                    <select id="${it.id}_${c.key}">
+                        <option value="3">매우 그렇다 (3점)</option>
+                        <option value="2">그렇다 (2점)</option>
+                        <option value="1">보통이다 (1점)</option>
+                    </select>
+                </div>`).join('')}
+        </div>`).join('');
+}
+$('back5').addEventListener('click', () => show('step4'));
+
+/* 6단계: 결과 */
+function score(id) {
+    return criteria.reduce((s, c) => s + parseInt($(`${id}_${c.key}`).value, 10), 0);
+}
+function best(prefix, texts) {
+    const scores = texts.map((_, i) => score(prefix + i));
+    const max = Math.max(...scores);
+    const idx = scores.indexOf(max);
+    const tie = scores.filter(s => s === max).length > 1;
+    const note = scores.map((s, i) => `방안 ${i + 1}: ${s}점`).join(' / ') + ` (${criteria.length * 3}점 만점)` +
+                 (tie ? ' — 점수가 같으면 먼저 쓴 방안을 골랐어요.' : '');
+    return { text: texts[idx], note };
+}
+$('resultBtn').addEventListener('click', () => {
+    const my = best('m', state.mine), org = best('o', state.org);
+    $('resName').textContent = userName;
+    $('resCause1').textContent = state.cause1 || '(쓰지 않았어요)';
+    $('resCause2').textContent = state.cause2 || '(쓰지 않았어요)';
+    $('bestMy').textContent = my.text;
+    $('myNote').textContent = my.note;
+    $('bestOrg').textContent = org.text;
+    $('orgNote').textContent = org.note;
+    show('step6');
+});
+$('restartBtn').addEventListener('click', () => location.reload());
+</script>
+</body>
+</html>
